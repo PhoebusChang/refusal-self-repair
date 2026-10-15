@@ -1,4 +1,6 @@
-# Llama Guard harmfulness judgements
+import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import json
 
@@ -14,6 +16,7 @@ tok.pad_token = tok.pad_token or tok.eos_token
 tok.padding_side = "left"
 model = AutoModelForCausalLM.from_pretrained(JUDGE, dtype = torch.bfloat16,
                                              device_map = config.DEVICE).eval()
+
 
 @torch.no_grad()
 def unsafe(prompts, responses, batch = 8):
@@ -32,7 +35,8 @@ def unsafe(prompts, responses, batch = 8):
                                                           skip_special_tokens = True)]
     return flags
 
-files = sorted(config.ARTIFACTS.glob("gen_*.json"))
+
+files = sorted(config.ARTIFACTS.glob("gen_*.json")) + sorted(config.ARTIFACTS.glob("cross_*.json"))
 print(f"{'model':>24} {'condition':>34} | {'kw ASR':>6} {'judged unsafe':>13}")
 for f in files:
     d = json.loads(f.read_text())

@@ -1,4 +1,6 @@
-# refusal direction by difference in means
+import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import torch
 import torch.nn.functional as F

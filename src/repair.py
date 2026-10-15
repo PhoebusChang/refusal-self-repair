@@ -4,19 +4,24 @@ from src.prompts import to_chat
 
 STATE = {"content": None, "cache": {}, "phase": None}
 
+
 def is_gemma(layer):
     return hasattr(layer, "pre_feedforward_layernorm")
+
 
 def writes(layer, part):
     if part == "mlp":
         return layer.post_feedforward_layernorm if is_gemma(layer) else layer.mlp
     return layer.post_attention_layernorm if is_gemma(layer) else layer.self_attn
 
+
 def _split(output):
     return (output[0], output[1:]) if isinstance(output, tuple) else (output, None)
 
+
 def _join(h, rest):
     return (h, *rest) if rest is not None else h
+
 
 def feature_cut(model, banks, K):
     def make(b):
@@ -31,6 +36,7 @@ def feature_cut(model, banks, K):
     L = model.model.layers
     return [L[l].register_forward_hook(make(b)) for l, b in banks.items()]
 
+
 def direction_cut(model, d, layers):
     def hook(module, args, output):
         h, rest = _split(output)
@@ -39,6 +45,7 @@ def direction_cut(model, d, layers):
         return _join(x.to(h.dtype), rest)
     L = model.model.layers
     return [L[l].register_forward_hook(hook) for l in layers]
+
 
 def block(model, layers, part, d):
     def make(key):
@@ -53,8 +60,10 @@ def block(model, layers, part, d):
     L = model.model.layers
     return [writes(L[l], part).register_forward_hook(make((part, l))) for l in layers]
 
+
 def opener_ids(tokenizer, words):
     return sorted({tokenizer.encode(w, add_special_tokens = False)[0] for w in words})
+
 
 @torch.no_grad()
 def run(model, tokenizer, prompts, edits = None, blocks = None, max_new = 0,

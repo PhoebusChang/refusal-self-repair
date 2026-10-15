@@ -1,4 +1,6 @@
-# McNemar + bootstrap CIs
+import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import json
 
@@ -9,22 +11,27 @@ import config
 
 rng = np.random.default_rng(config.SEED)
 
+
 def mcnemar(a, b):
     a, b = np.array(a), np.array(b)
     x, y = int((a & ~b).sum()), int((~a & b).sum())
     return 1.0 if x + y == 0 else binomtest(x, x + y, 0.5).pvalue
+
 
 def ci(flags):
     f = np.array(flags, dtype = float)
     boots = rng.choice(f, (5000, len(f))).mean(1)
     return np.percentile(boots, [2.5, 97.5])
 
+
 def find(conds, *must, avoid = ()):
     return next(k for k in conds if all(m in k for m in must) and not any(v in k for v in avoid))
+
 
 lines = ["| model / cut | cut | + block MLP r | + block MLP u | p (r vs cut) | p (r vs u) |",
          "|---|---|---|---|---|---|"]
 sets = [("gen_gemma.json", [("K=3", "cut K=3"), ("K=8", "cut K=8")])]
+sets += [(f.name, [None]) for f in sorted(config.ARTIFACTS.glob("cross_*.json"))]
 out = {}
 for name, cuts in sets:
     d = json.loads((config.ARTIFACTS / name).read_text())

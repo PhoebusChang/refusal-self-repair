@@ -1,4 +1,6 @@
-# candidate features by cos(W_dec, r)
+import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import json
 import torch

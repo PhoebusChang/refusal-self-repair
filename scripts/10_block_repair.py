@@ -1,4 +1,6 @@
-# pin the MLP write along r
+import pathlib
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import json
 
@@ -11,7 +13,7 @@ from src.prompts import load_split, to_chat
 from src.generation import _opener_ids, REFUSAL_OPENERS, COMPLY_OPENERS
 from src.sae import load_sae, build_bank
 
-REPAIR = (9, 11, 12, 14, 16, 17)       # top compensators from 11/12
+REPAIR = (9, 11, 12, 14, 16, 17)       # top compensators from 08/09
 CONTROL = (19, 20, 21, 22, 23, 24)
 DEV = config.DEVICE
 
